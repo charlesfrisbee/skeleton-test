@@ -49,9 +49,11 @@ const SkeletonWrapper: React.FC<SkeletonWrapperProps> = ({ children }) => {
     }
   };
 
+  console.log(skeletonStructure);
+
   return (
     <div className="flex flex-col gap-8">
-      <div>{children}</div>
+      {/* <div>{children}</div> */}
       {skeletonStructure.map(renderSkeletonNode)}
     </div>
   );

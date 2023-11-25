@@ -6,16 +6,23 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "parse": "tsx src/lib/utils/parser.tsx"
   },
   "dependencies": {
+    "@babel/parser": "^7.23.4",
+    "@babel/traverse": "^7.23.4",
+    "@testing-library/react": "^14.1.2",
     "clsx": "^2.0.0",
+    "jsdom": "^22.1.0",
     "next": "14.0.3",
     "react": "^18",
     "react-dom": "^18",
-    "tailwind-merge": "^2.0.0"
+    "tailwind-merge": "^2.0.0",
+    "tsx": "^4.5.0"
   },
   "devDependencies": {
+    "@types/jsdom": "^21.1.6",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
@@ -24,6 +31,7 @@
     "eslint-config-next": "14.0.3",
     "postcss": "^8",
     "tailwindcss": "^3.3.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^0.34.6"
   }
 }
