@@ -66,6 +66,7 @@ function traverseComponent(
   parsedComponents = new Set<string>()
 ) {
   const elements: Array<{ elementType: string; classNames: string }> = [];
+  const usedComponents: Set<string> = new Set();
 
   if (parsedComponents.has(currentFilePath)) {
     return elements; // Skip if this component has already been parsed
@@ -75,20 +76,33 @@ function traverseComponent(
   traverse(ast, {
     ImportDeclaration(path: any) {
       const sourcePath = path.node.source.value;
-      const resolvedPath = resolveImportPath(sourcePath, currentFilePath);
+      path.node.specifiers.forEach((specifier: any) => {
+        if (
+          t.isImportSpecifier(specifier) ||
+          t.isImportDefaultSpecifier(specifier)
+        ) {
+          const localName = specifier.local.name;
+          if (isCustomComponent(localName)) {
+            usedComponents.add(localName);
+          }
+        }
+      });
 
-      if (resolvedPath && !parsedComponents.has(resolvedPath)) {
-        const importedAst = parseFile(resolvedPath);
-        elements.push(
-          ...traverseComponent(importedAst, resolvedPath, parsedComponents)
-        );
+      if (usedComponents.size > 0 && usedComponents.has(sourcePath)) {
+        const resolvedPath = resolveImportPath(sourcePath, currentFilePath);
+        if (resolvedPath && !parsedComponents.has(resolvedPath)) {
+          const importedAst = parseFile(resolvedPath);
+          elements.push(
+            ...traverseComponent(importedAst, resolvedPath, parsedComponents)
+          );
+        }
       }
     },
     JSXElement(path: any) {
       const openingElement = path.node.openingElement;
       const elementType = openingElement.name.name;
 
-      if (isCustomComponent(elementType)) {
+      if (isCustomComponent(elementType) && usedComponents.has(elementType)) {
         // Directly resolve the path of the custom component
         const resolvedPath = resolveImportPath(
           `./${elementType}`,
