@@ -6,6 +6,7 @@ const SkeletonComponent = () => {
       <div className="border rounded-full  w-16 h-16 bg-gray-300 animate-pulse"></div>
       <div className="capitalize w-10 h-6 text-xl  bg-gray-300 animate-pulse"></div>
       <div className="border rounded-full  w-16 h-16 bg-gray-300 animate-pulse"></div>
+      <div className=" bg-gray-300 animate-pulse"></div>
       <div className="capitalize w-10 h-6 text-xl  bg-gray-300 animate-pulse"></div>
     </div>
   );

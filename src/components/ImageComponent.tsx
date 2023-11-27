@@ -1,11 +1,12 @@
 import React from "react";
+import SubImageComponent from "./SubImageComponent";
 
 type ImageProps = {
   src: string;
 };
 
 const ImageComponent = ({ src }: ImageProps) => {
-  return <img src={src} className="border rounded-full  w-16 h-16" />;
+  return <SubImageComponent src={src} />;
 };
 
 export default ImageComponent;
