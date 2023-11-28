@@ -6,6 +6,8 @@ const SkeletonComponent = () => {
       <img className="border rounded-full  w-16 h-16 bg-gray-300 animate-pulse"></img>
       <p className="capitalize w-10 h-6 text-xl  bg-gray-300 animate-pulse"></p>
       <img className="border rounded-full  w-16 h-16 bg-gray-300 animate-pulse"></img>
+      <p className="capitalize w-10 h-6 text-xl  bg-gray-300 animate-pulse"></p>
+      <img className="border rounded-full  w-16 h-16 bg-gray-300 animate-pulse"></img>
       <img className="border rounded-full w-14 h-14 bg-gray-300 animate-pulse"></img>
       <p className="capitalize w-10 h-6 text-xl  bg-gray-300 animate-pulse"></p>
     </div>

@@ -2,6 +2,7 @@ import * as parser from "@babel/parser";
 import traverse from "@babel/traverse";
 import fs from "fs";
 import path from "path";
+import { twMerge } from "tailwind-merge";
 
 // Function to create a skeleton element based on the original element type
 const createSkeletonElement = (
@@ -10,7 +11,7 @@ const createSkeletonElement = (
 ): string => {
   // Add the skeleton classes
   const skeletonClasses = "bg-gray-300 animate-pulse";
-  const combinedClassNames = `${originalClassNames} ${skeletonClasses}`;
+  const combinedClassNames = twMerge(originalClassNames, skeletonClasses);
 
   // Return the transformed element
   return `<div className="${combinedClassNames}"></div>`;
