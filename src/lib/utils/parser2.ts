@@ -1,5 +1,5 @@
 import * as parser from "@babel/parser";
-import traverse, { NodePath } from "@babel/traverse";
+import traverse from "@babel/traverse";
 import * as t from "@babel/types";
 import fs from "fs";
 import path from "path";
@@ -74,9 +74,9 @@ function traverseComponent(
   parsedComponents.add(currentFilePath);
 
   traverse(ast, {
-    ImportDeclaration(path: any) {
+    ImportDeclaration(path) {
       const sourcePath = path.node.source.value;
-      path.node.specifiers.forEach((specifier: any) => {
+      path.node.specifiers.forEach((specifier) => {
         if (
           t.isImportSpecifier(specifier) ||
           t.isImportDefaultSpecifier(specifier)
@@ -98,7 +98,7 @@ function traverseComponent(
         }
       }
     },
-    JSXElement(path: any) {
+    JSXElement(path) {
       const openingElement = path.node.openingElement;
       const elementType = openingElement.name.name;
 
@@ -141,6 +141,7 @@ function createSkeletonElement(element: ElementData): string {
 
   let childrenJSX = "";
   if (element.children && element.children.length > 0) {
+    console.log("children", element.children);
     childrenJSX = element.children.map(createSkeletonElement).join("\n");
   }
 

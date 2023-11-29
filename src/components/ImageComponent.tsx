@@ -6,7 +6,11 @@ type ImageProps = {
 };
 
 const ImageComponent = ({ src }: ImageProps) => {
-  return <SubImageComponent src={src} />;
+  return (
+    <div>
+      <SubImageComponent src={src} />;
+    </div>
+  );
 };
 
 export default ImageComponent;
