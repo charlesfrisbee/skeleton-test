@@ -86,6 +86,17 @@ const imports = parseImports(ast);
 console.log(imports);
 
 traverse(ast, {
+  FunctionDeclaration(path2) {
+    // Remove async keyword
+    path2.node.async = false;
+
+    // Keep only the return statement in the function body
+    const returnStatement = path2.node.body.body.find(
+      (statement) => statement.type === "ReturnStatement"
+    );
+    path2.node.body.body = [returnStatement];
+  },
+
   JSXOpeningElement(path) {
     // Check if current node name is in list of imports
 
