@@ -65,6 +65,7 @@ function traverseComponent(
   currentFilePath: string,
   parsedComponents = new Set<string>()
 ) {
+  console.log("currentFilePath", currentFilePath);
   const elements: Array<{ elementType: string; classNames: string }> = [];
   const usedComponents: Set<string> = new Set();
 

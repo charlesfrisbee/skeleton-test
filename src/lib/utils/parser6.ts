@@ -47,7 +47,7 @@ function replaceImageComponentInFetchComponent(
       if (path.node.name.name === "ImageComponent") {
         const parentPath = path.findParent((p) => p.isJSXElement());
         if (parentPath && parentPath.node) {
-          parentPath.replaceWith(t.cloneDeep(imageComponentJsx));
+          parentPath.replaceWith(t.cloneNode(imageComponentJsx));
         }
       }
     },

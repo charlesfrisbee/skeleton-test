@@ -1,10 +1,11 @@
 import ImageComponent from "./ImageComponent";
+import react from "react";
 
 type AsyncComponentProps = {
   pokemonName: string;
 };
 
-export async function FetchComponent() {
+async function FetchComponent() {
   const res = await fetch("https://pokeapi.co/api/v2/pokemon/ditto");
   const pokemon = await res.json();
 
