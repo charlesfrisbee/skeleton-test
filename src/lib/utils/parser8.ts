@@ -80,51 +80,53 @@ function resolveImportPath(
   );
 }
 
-const filePath = "src/components/FetchComponent.tsx";
-const ast = parseFileToAst(filePath);
-const imports = parseImports(ast);
-console.log(imports);
+function traverseAST(ast: t.Node) {
+  const imports = parseImports(ast);
 
-traverse(ast, {
-  FunctionDeclaration(path2) {
-    // Remove async keyword
-    path2.node.async = false;
+  traverse(ast, {
+    FunctionDeclaration(path) {
+      // Remove async keyword from function declaration
+      path.node.async = false;
 
-    // Keep only the return statement in the function body
-    const returnStatement = path2.node.body.body.find(
-      (statement) => statement.type === "ReturnStatement"
-    );
-    path2.node.body.body = [returnStatement];
-  },
+      // Keep only the return statement in the function body (remove everything else from original component)
+      const returnStatement = path.node.body.body.find(
+        (statement) => statement.type === "ReturnStatement"
+      );
+      path.node.body.body = [returnStatement];
+    },
+    JSXOpeningElement(path) {
+      const foundElement = imports.find((element) =>
+        element.source.includes(path.node.name.name)
+      );
 
-  JSXOpeningElement(path) {
-    // Check if current node name is in list of imports
+      if (isCustomComponent(path.node.name.name) && foundElement) {
+        const newPath = resolveImportPath(foundElement.source, filePath);
 
-    const foundElement = imports.find((element) =>
-      element.source.includes(path.node.name.name)
-    );
+        if (newPath) {
+          let newAst = parseFileToAst(newPath);
 
-    if (isCustomComponent(path.node.name.name) && foundElement) {
-      const newPath = resolveImportPath(foundElement.source, filePath);
+          let imageComponentJsx = extractJsxFromImageComponent(newPath);
 
-      console.log(newPath);
+          const parentPath = path.findParent((p) => p.isJSXElement());
 
-      if (newPath) {
-        let newAst = parseFileToAst(newPath);
+          if (parentPath && parentPath.node) {
+            console.log("yes");
+            parentPath.replaceWith(t.cloneNode(imageComponentJsx));
+          }
 
-        const imageComponentJsx = extractJsxFromImageComponent(newPath);
-
-        const parentPath = path.findParent((p) => p.isJSXElement());
-        if (parentPath && parentPath.node) {
-          parentPath.replaceWith(t.cloneNode(imageComponentJsx));
+          traverseAST(newAst);
         }
-
-        const imports2 = parseImports(newAst);
-        console.log(imports2);
       }
-    }
-  },
-});
+    },
+  });
+}
 
-const newCode = generate(ast).code;
+// Code execution starts here
+const filePath = "src/components/FetchComponent.tsx";
+
+// parse original component to get AST
+const originalAst = parseFileToAst(filePath);
+
+traverseAST(originalAst);
+const newCode = generate(originalAst).code;
 console.log(newCode);
