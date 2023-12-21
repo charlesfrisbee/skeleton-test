@@ -1,72 +1,137 @@
 import * as parser from "@babel/parser";
 import traverse from "@babel/traverse";
+import * as t from "@babel/types";
+import generate from "@babel/generator";
 import fs from "fs";
 import path from "path";
 
-// Define a type for Import Information
-type ImportInfo = {
-  source: string;
-  importedName: string;
-};
+function parseFileToAst(filePath) {
+  const content = fs.readFileSync(filePath, "utf-8");
+  return parser.parse(content, {
+    sourceType: "module",
+    plugins: ["jsx", "typescript"],
+  });
+}
 
-function resolveImportPath(
-  importPath: string,
-  currentFile: string
-): string | null {
-  // Skip Node module imports (anything not starting with '.' or '/')
-  if (!importPath.startsWith(".") && !importPath.startsWith("/")) {
-    return null;
+function getComponentNameFromPath(filePath) {
+  const baseName = path.basename(filePath);
+  return baseName.split(".")[0];
+}
+
+function isCustomComponent(elementName) {
+  return /^[A-Z]/.test(elementName);
+}
+
+function getRelativeImportPath(from, to) {
+  let relativePath = path.relative(path.dirname(from), path.dirname(to));
+  if (!relativePath.startsWith(".") && !relativePath.startsWith("..")) {
+    relativePath = "./" + relativePath;
   }
+  if (relativePath === ".") {
+    relativePath = "./";
+  }
+  const parsedPath = path.parse(to);
+  return "./" + path.join(relativePath, parsedPath.name).replace(/\\/g, "/");
+}
 
-  const baseDir = path.dirname(currentFile);
-  const possibleExtensions = ["", ".tsx", ".ts", ".jsx", ".js"];
+// ... rest of the code remains the same
 
-  for (let ext of possibleExtensions) {
-    const fullPath = path.resolve(baseDir, `${importPath}${ext}`);
+function resolveImportPath(importPath, currentFilePath) {
+  const dirName = path.dirname(currentFilePath);
+  const possibleExtensions = [".js", ".jsx", ".ts", ".tsx"];
+  for (const ext of possibleExtensions) {
+    const fullPath = path.join(dirName, `${importPath}${ext}`);
     if (fs.existsSync(fullPath)) {
-      console.log("fullPath", fullPath);
       return fullPath;
     }
   }
   throw new Error(
-    `Cannot resolve path for import '${importPath}' in file '${currentFile}'`
+    `Cannot find module '${importPath}' from '${currentFilePath}'`
   );
 }
 
-// Function to parse imports from a file
-function parseImports(filePath: string | null): ImportInfo[] {
-  if (!filePath) {
-    return [];
+function findImports(
+  filePath,
+  allImports = new Set(),
+  visitedFiles = new Set()
+) {
+  if (visitedFiles.has(filePath)) {
+    return allImports;
   }
 
-  const content = fs.readFileSync(filePath, "utf-8");
-  const ast = parser.parse(content, {
-    sourceType: "module",
-    plugins: ["jsx", "typescript"],
-  });
-
-  const imports: ImportInfo[] = [];
+  const ast = parseFileToAst(filePath);
+  visitedFiles.add(filePath);
 
   traverse(ast, {
     ImportDeclaration(path) {
-      const source = path.node.source.value; // Path of the import
-      path.node.specifiers.forEach((specifier) => {
-        const importedName =
-          specifier.type === "ImportDefaultSpecifier"
-            ? "default"
-            : specifier.imported.name;
-        imports.push({ source, importedName });
-      });
+      const sourcePath = path.node.source.value;
+      if (!sourcePath.startsWith(".")) {
+        // Skip node_modules imports or any non-relative imports
+        return;
+      }
+
+      const absolutePath = resolveImportPath(sourcePath, filePath);
+      allImports.add(absolutePath);
+
+      if (isCustomComponent(path.node.specifiers[0].local.name)) {
+        findImports(absolutePath, allImports, visitedFiles); // Recursive call
+      }
     },
   });
 
-  return imports;
+  return allImports;
 }
 
-// Usage
-const filePath = "src/components/FetchComponent.tsx"; // Update this to your file path
-const imports = parseImports(filePath);
-console.log(imports);
-const newPath = resolveImportPath(imports[0].source, filePath);
-const imports2 = parseImports(newPath);
-console.log(imports2);
+function addImportsToComponent(mainFilePath, importsToAdd) {
+  const ast = parseFileToAst(mainFilePath);
+  const existingImports = new Set();
+  let lastImportIndex = -1;
+
+  // Gather existing imports and find the index of the last import
+  traverse(ast, {
+    ImportDeclaration(path) {
+      existingImports.add(path.node.source.value);
+      lastImportIndex = path.parent.body.indexOf(path.node);
+    },
+  });
+
+  // Generate import declarations from the set of import paths
+  const importDeclarations = Array.from(importsToAdd)
+    .map((importPath) => {
+      const componentName = getComponentNameFromPath(importPath);
+      const relativeImportPath = getRelativeImportPath(
+        mainFilePath,
+        importPath
+      );
+
+      if (!existingImports.has(relativeImportPath)) {
+        existingImports.add(relativeImportPath);
+        return t.importDeclaration(
+          [t.importDefaultSpecifier(t.identifier(componentName))],
+          t.stringLiteral(relativeImportPath)
+        );
+      }
+      return null;
+    })
+    .filter(Boolean); // Filter out nulls (already existing imports)
+
+  // Insert new imports after the last existing import
+  if (lastImportIndex !== -1) {
+    ast.program.body.splice(lastImportIndex + 1, 0, ...importDeclarations);
+  } else {
+    // If there are no existing imports, unshift to the top
+    ast.program.body.unshift(...importDeclarations);
+  }
+
+  return generate(ast).code;
+}
+
+// Replace with the actual path of your main component
+const mainComponentPath = "src/components/FetchComponent.tsx";
+const allImports = findImports(mainComponentPath);
+const updatedComponentCode = addImportsToComponent(
+  mainComponentPath,
+  allImports
+);
+
+console.log(updatedComponentCode);

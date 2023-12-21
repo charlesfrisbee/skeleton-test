@@ -121,11 +121,110 @@ function traverseAST(ast: t.Node) {
   });
 }
 
+function addImportsToComponent(mainFilePath, importsToAdd) {
+  const ast = parseFileToAst(mainFilePath);
+  const existingImports = new Set();
+  let lastImportIndex = -1;
+
+  // Gather existing imports and find the index of the last import
+  traverse(ast, {
+    ImportDeclaration(path) {
+      existingImports.add(path.node.source.value);
+      lastImportIndex = path.parent.body.indexOf(path.node);
+    },
+  });
+
+  // Generate import declarations from the set of import paths
+  const importDeclarations = Array.from(importsToAdd)
+    .map((importPath) => {
+      const componentName = getComponentNameFromPath(importPath);
+      const relativeImportPath = getRelativeImportPath(
+        mainFilePath,
+        importPath
+      );
+
+      if (!existingImports.has(relativeImportPath)) {
+        existingImports.add(relativeImportPath);
+        return t.importDeclaration(
+          [t.importDefaultSpecifier(t.identifier(componentName))],
+          t.stringLiteral(relativeImportPath)
+        );
+      }
+      return null;
+    })
+    .filter(Boolean); // Filter out nulls (already existing imports)
+
+  // Insert new imports after the last existing import
+  if (lastImportIndex !== -1) {
+    ast.program.body.splice(lastImportIndex + 1, 0, ...importDeclarations);
+  } else {
+    // If there are no existing imports, unshift to the top
+    ast.program.body.unshift(...importDeclarations);
+  }
+
+  return generate(ast).code;
+}
+
+function findImports(
+  filePath,
+  allImports = new Set(),
+  visitedFiles = new Set()
+) {
+  if (visitedFiles.has(filePath)) {
+    return allImports;
+  }
+
+  const ast = parseFileToAst(filePath);
+  visitedFiles.add(filePath);
+
+  traverse(ast, {
+    ImportDeclaration(path) {
+      const sourcePath = path.node.source.value;
+      if (!sourcePath.startsWith(".")) {
+        // Skip node_modules imports or any non-relative imports
+        return;
+      }
+
+      const absolutePath = resolveImportPath(sourcePath, filePath);
+      allImports.add(absolutePath);
+
+      if (isCustomComponent(path.node.specifiers[0].local.name)) {
+        findImports(absolutePath, allImports, visitedFiles); // Recursive call
+      }
+    },
+  });
+
+  return allImports;
+}
+
+function getRelativeImportPath(from, to) {
+  let relativePath = path.relative(path.dirname(from), path.dirname(to));
+  if (!relativePath.startsWith(".") && !relativePath.startsWith("..")) {
+    relativePath = "./" + relativePath;
+  }
+  if (relativePath === ".") {
+    relativePath = "./";
+  }
+  const parsedPath = path.parse(to);
+  return "./" + path.join(relativePath, parsedPath.name).replace(/\\/g, "/");
+}
+
+function getComponentNameFromPath(filePath) {
+  const baseName = path.basename(filePath);
+  return baseName.split(".")[0];
+}
+
 // Code execution starts here
 const filePath = "src/components/FetchComponent.tsx";
 
+const allImports = findImports(filePath);
+const updatedComponentCode = addImportsToComponent(filePath, allImports);
+
 // parse original component to get AST
-const originalAst = parseFileToAst(filePath);
+const originalAst = parser.parse(updatedComponentCode, {
+  sourceType: "module",
+  plugins: ["jsx", "typescript"],
+});
 
 traverseAST(originalAst);
 const newCode = generate(originalAst).code;

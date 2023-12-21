@@ -1,4 +1,5 @@
 import React from "react";
+import SubSubImageComponent from "./SubSubImageComponent";
 
 type ImageProps = {
   src: string;
@@ -6,8 +7,8 @@ type ImageProps = {
 
 const SubImageComponent = ({ src }: ImageProps) => {
   return (
-    <div>
-      <img src={src} className="border rounded-full w-14 h-14" />;
+    <div className="text-red-200">
+      <SubSubImageComponent src={src} />
     </div>
   );
 };
