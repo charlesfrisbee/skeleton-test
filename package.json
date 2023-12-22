@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "parse": "tsx src/lib/utils/parser.tsx"
+    "parse": "tsx src/lib/utils/parser8.ts"
   },
   "dependencies": {
     "@babel/generator": "^7.23.5",
@@ -20,8 +20,7 @@
     "next": "14.0.3",
     "react": "^18",
     "react-dom": "^18",
-    "tailwind-merge": "^2.0.0",
-    "tsx": "^4.5.0"
+    "tailwind-merge": "^2.0.0"
   },
   "devDependencies": {
     "@types/babel-generator": "^6.25.8",
@@ -36,6 +35,7 @@
     "eslint-config-next": "14.0.3",
     "postcss": "^8",
     "tailwindcss": "^3.3.0",
+    "tsx": "^4.5.0",
     "typescript": "^5",
     "vitest": "^0.34.6"
   }
