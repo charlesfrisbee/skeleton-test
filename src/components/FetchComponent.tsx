@@ -1,5 +1,4 @@
 import ImageComponent from "./ImageComponent";
-import react from "react";
 
 type AsyncComponentProps = {
   pokemonName: string;
@@ -28,7 +27,9 @@ async function FetchComponent() {
         src={pokemon.sprites.front_default}
         className="border rounded-full  w-16 h-16"
       />
-      <ImageComponent src={pokemon.sprites.front_default} />
+      <span>
+        <ImageComponent src={pokemon.sprites.front_default} />
+      </span>
       <p className="capitalize w-10 h-6 text-xl ">{pokemon.name}</p>
     </div>
   );

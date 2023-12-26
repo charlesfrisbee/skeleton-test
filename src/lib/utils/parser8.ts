@@ -95,6 +95,13 @@ function traverseAST(ast: t.Node) {
       path.node.body.body = [returnStatement];
     },
     JSXOpeningElement(path) {
+      const attributes = path.node.attributes;
+      const classNameAttribute = attributes.find(
+        (attr) => t.isJSXAttribute(attr) && attr.name.name === "className"
+      );
+
+      path.node.attributes = classNameAttribute ? [classNameAttribute] : [];
+
       const foundElement = imports.find((element) =>
         element.source.includes(path.node.name.name)
       );

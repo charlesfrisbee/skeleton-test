@@ -8,7 +8,7 @@ type ImageProps = {
 const ImageComponent = ({ src }: ImageProps) => {
   return (
     <div>
-      <SubImageComponent src={src} />;
+      <SubImageComponent src={src} />
     </div>
   );
 };
