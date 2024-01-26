@@ -20,7 +20,7 @@ function parseFileToAst(filePath: string) {
 
 function extractJsxFromImageComponent(filePath: string) {
   const ast = parseFileToAst(filePath);
-  let jsxElement = null;
+  let jsxElement: t.JSXElement | null = null;
 
   traverse(ast, {
     ReturnStatement(path) {
@@ -92,7 +92,14 @@ function traverseAST(ast: t.Node) {
       const returnStatement = path.node.body.body.find(
         (statement) => statement.type === "ReturnStatement"
       );
-      path.node.body.body = [returnStatement];
+
+      if (returnStatement) {
+        path.node.body.body = [returnStatement];
+      }
+    },
+    JSXExpressionContainer(path) {
+      // Replace the JSXExpressionContainer with an empty JSXText node
+      path.replaceWith(t.jSXText(""));
     },
     JSXOpeningElement(path) {
       const attributes = path.node.attributes;
@@ -128,7 +135,10 @@ function traverseAST(ast: t.Node) {
   });
 }
 
-function addImportsToComponent(mainFilePath, importsToAdd) {
+function addImportsToComponent(
+  mainFilePath: string,
+  importsToAdd: t.ImportDeclaration[]
+) {
   const ast = parseFileToAst(mainFilePath);
   const existingImports = new Set();
   let lastImportIndex = -1;
@@ -233,6 +243,20 @@ const originalAst = parser.parse(updatedComponentCode, {
   plugins: ["jsx", "typescript"],
 });
 
+// recursively traverse AST
 traverseAST(originalAst);
+
+// remove imports from final ast
+traverse(originalAst, {
+  ImportDeclaration(path) {
+    path.remove();
+  },
+});
+
+// generate code from final ast
 const newCode = generate(originalAst).code;
 console.log(newCode);
+
+// write to file
+const outputFilePath = path.resolve(__dirname, "SkeletonComponent.tsx");
+fs.writeFileSync(outputFilePath, newCode);
