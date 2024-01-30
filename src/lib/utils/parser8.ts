@@ -18,6 +18,14 @@ function parseFileToAst(filePath: string) {
   });
 }
 
+function removeImports(ast: t.Node) {
+  traverse(ast, {
+    ImportDeclaration(path) {
+      path.remove();
+    },
+  });
+}
+
 function extractJsxFromImageComponent(filePath: string) {
   const ast = parseFileToAst(filePath);
   let jsxElement: t.JSXElement | null = null;
@@ -44,11 +52,19 @@ function parseImports(ast: t.Node): ImportInfo[] {
     ImportDeclaration(path) {
       const source = path.node.source.value; // Path of the import
       path.node.specifiers.forEach((specifier) => {
-        const importedName =
-          specifier.type === "ImportDefaultSpecifier"
-            ? "default"
-            : specifier.imported.name;
-        imports.push({ source, importedName });
+        if (specifier.type === "ImportSpecifier") {
+          // Check if 'imported' is an Identifier
+          if (t.isIdentifier(specifier.imported)) {
+            const importedName = specifier.imported.name;
+            imports.push({ source, importedName });
+          }
+        } else if (specifier.type === "ImportDefaultSpecifier") {
+          // Handle default imports
+          imports.push({ source, importedName: "default" });
+        } else if (specifier.type === "ImportNamespaceSpecifier") {
+          // Handle namespace imports
+          imports.push({ source, importedName: "*" });
+        }
       });
     },
   });
@@ -81,14 +97,14 @@ function resolveImportPath(
 }
 
 function traverseAST(ast: t.Node) {
-  const imports = parseImports(ast);
+  const imports = parseImports(ast); // Assuming parseImports is defined elsewhere
 
   traverse(ast, {
     FunctionDeclaration(path) {
       // Remove async keyword from function declaration
       path.node.async = false;
 
-      // Keep only the return statement in the function body (remove everything else from original component)
+      // Keep only the return statement in the function body
       const returnStatement = path.node.body.body.find(
         (statement) => statement.type === "ReturnStatement"
       );
@@ -109,35 +125,52 @@ function traverseAST(ast: t.Node) {
 
       path.node.attributes = classNameAttribute ? [classNameAttribute] : [];
 
-      const foundElement = imports.find((element) =>
-        element.source.includes(path.node.name.name)
-      );
+      let jsxElementName: string | undefined; // Explicitly declaring the type of 'name'
 
-      if (isCustomComponent(path.node.name.name) && foundElement) {
-        const newPath = resolveImportPath(foundElement.source, filePath);
+      if (t.isJSXIdentifier(path.node.name)) {
+        jsxElementName = path.node.name.name;
+      } else if (t.isJSXMemberExpression(path.node.name)) {
+        // Handle JSXMemberExpression if needed
+        // For example, name = path.node.name.property.name;
+      }
 
-        if (newPath) {
-          let newAst = parseFileToAst(newPath);
+      // Ensure 'name' is not undefined before using it
+      if (jsxElementName) {
+        const foundElement = imports.find((element) =>
+          element.source.includes(jsxElementName as string)
+        );
 
-          let imageComponentJsx = extractJsxFromImageComponent(newPath);
+        if (isCustomComponent(jsxElementName) && foundElement) {
+          const newPath = resolveImportPath(foundElement.source, filePath); // filePath should be defined
 
-          const parentPath = path.findParent((p) => p.isJSXElement());
+          if (newPath) {
+            let newAst = parseFileToAst(newPath); // Assuming parseFileToAst is defined
 
-          if (parentPath && parentPath.node) {
-            console.log("yes");
-            parentPath.replaceWith(t.cloneNode(imageComponentJsx));
+            let imageComponentJsx = extractJsxFromImageComponent(newPath); // Assuming this function is defined
+            if (imageComponentJsx) {
+              const parentPath = path.findParent((p) => p.isJSXElement());
+
+              if (parentPath && parentPath.node) {
+                console.log("yes");
+                parentPath.replaceWith(t.cloneNode(imageComponentJsx, false)); // cloneNode(node, deep)
+              }
+
+              traverseAST(newAst); // Recursively call traverseAST
+            }
           }
-
-          traverseAST(newAst);
         }
       }
     },
   });
 }
 
+function hasBody(node: t.Node): node is t.Program | t.BlockStatement {
+  return "body" in node && Array.isArray((node as any).body);
+}
+
 function addImportsToComponent(
   mainFilePath: string,
-  importsToAdd: t.ImportDeclaration[]
+  importsToAdd: Set<string>
 ) {
   const ast = parseFileToAst(mainFilePath);
   const existingImports = new Set();
@@ -147,17 +180,19 @@ function addImportsToComponent(
   traverse(ast, {
     ImportDeclaration(path) {
       existingImports.add(path.node.source.value);
-      lastImportIndex = path.parent.body.indexOf(path.node);
+      if (hasBody(path.parent)) {
+        lastImportIndex = path.parent.body.indexOf(path.node);
+      }
     },
   });
 
   // Generate import declarations from the set of import paths
   const importDeclarations = Array.from(importsToAdd)
     .map((importPath) => {
-      const componentName = getComponentNameFromPath(importPath);
+      const componentName = getComponentNameFromPath(importPath.toString());
       const relativeImportPath = getRelativeImportPath(
         mainFilePath,
-        importPath
+        importPath.toString()
       );
 
       if (!existingImports.has(relativeImportPath)) {
@@ -173,19 +208,23 @@ function addImportsToComponent(
 
   // Insert new imports after the last existing import
   if (lastImportIndex !== -1) {
-    ast.program.body.splice(lastImportIndex + 1, 0, ...importDeclarations);
+    ast.program.body.splice(
+      lastImportIndex + 1,
+      0,
+      ...(importDeclarations as t.Statement[])
+    );
   } else {
     // If there are no existing imports, unshift to the top
-    ast.program.body.unshift(...importDeclarations);
+    ast.program.body.unshift(...(importDeclarations as t.Statement[]));
   }
 
   return generate(ast).code;
 }
 
 function findImports(
-  filePath,
-  allImports = new Set(),
-  visitedFiles = new Set()
+  filePath: string,
+  allImports = new Set<string>(),
+  visitedFiles = new Set<string>()
 ) {
   if (visitedFiles.has(filePath)) {
     return allImports;
@@ -203,9 +242,12 @@ function findImports(
       }
 
       const absolutePath = resolveImportPath(sourcePath, filePath);
-      allImports.add(absolutePath);
+      allImports.add(absolutePath as string);
 
-      if (isCustomComponent(path.node.specifiers[0].local.name)) {
+      if (
+        isCustomComponent(path.node.specifiers[0].local.name) &&
+        absolutePath
+      ) {
         findImports(absolutePath, allImports, visitedFiles); // Recursive call
       }
     },
@@ -214,7 +256,7 @@ function findImports(
   return allImports;
 }
 
-function getRelativeImportPath(from, to) {
+function getRelativeImportPath(from: string, to: string) {
   let relativePath = path.relative(path.dirname(from), path.dirname(to));
   if (!relativePath.startsWith(".") && !relativePath.startsWith("..")) {
     relativePath = "./" + relativePath;
@@ -226,7 +268,7 @@ function getRelativeImportPath(from, to) {
   return "./" + path.join(relativePath, parsedPath.name).replace(/\\/g, "/");
 }
 
-function getComponentNameFromPath(filePath) {
+function getComponentNameFromPath(filePath: string) {
   const baseName = path.basename(filePath);
   return baseName.split(".")[0];
 }
@@ -247,11 +289,7 @@ const originalAst = parser.parse(updatedComponentCode, {
 traverseAST(originalAst);
 
 // remove imports from final ast
-traverse(originalAst, {
-  ImportDeclaration(path) {
-    path.remove();
-  },
-});
+removeImports(originalAst);
 
 // generate code from final ast
 const newCode = generate(originalAst).code;
