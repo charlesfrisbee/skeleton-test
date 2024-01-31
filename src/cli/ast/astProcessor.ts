@@ -1,11 +1,14 @@
 import * as parser from "@babel/parser";
-import traverse from "@babel/traverse";
+import _traverse from "@babel/traverse";
 import * as t from "@babel/types";
 import fs from "fs";
 import { isCustomComponent } from "../utils/helpers";
 import { resolveImportPath } from "../utils/fileSystem";
 import { ImportInfo } from "../types";
-import generate from "@babel/generator";
+import _generate from "@babel/generator";
+
+const traverse = _traverse.default;
+const generate = _generate.default;
 
 export function parseFileToAst(filePath: string) {
   const content = fs.readFileSync(filePath, "utf-8");
