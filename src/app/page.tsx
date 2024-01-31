@@ -1,7 +1,7 @@
 import AsyncComponent from "@/components/AsyncComponent";
 import FetchComponent from "@/components/FetchComponent";
 import SkeletonWrapper from "@/components/SkeletonWrapper";
-import SkeletonComponent from "@/lib/utils/SkeletonComponent";
+import SkeletonComponent from "@/components/SkeletonComponent";
 import { Suspense } from "react";
 
 export default async function Home() {

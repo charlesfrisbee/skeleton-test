@@ -2,13 +2,18 @@
   "name": "skeleton-test",
   "version": "0.1.0",
   "private": true,
+  "main": "src/cli/cli.ts",
+  "bin": {
+    "skeli": "./src/cli/cli.ts"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "parse": "tsx src/lib/utils/parser8.ts",
-    "cli": "tsx src/cli/core.ts"
+    "cli": "tsx src/cli/core.ts",
+    "cli2": "tsx src/cli/cli.ts"
   },
   "dependencies": {
     "@babel/generator": "^7.23.5",
@@ -17,6 +22,8 @@
     "@babel/types": "^7.23.5",
     "@testing-library/react": "^14.1.2",
     "clsx": "^2.0.0",
+    "commander": "^11.1.0",
+    "inquirer": "^9.2.13",
     "jsdom": "^22.1.0",
     "next": "14.0.3",
     "react": "^18",
@@ -24,9 +31,10 @@
     "tailwind-merge": "^2.0.0"
   },
   "devDependencies": {
-    "@types/babel-generator": "^6.25.8",
     "@types/babel__generator": "^7.6.7",
     "@types/babel__traverse": "^7.20.4",
+    "@types/babel-generator": "^6.25.8",
+    "@types/inquirer": "^9.0.7",
     "@types/jsdom": "^21.1.6",
     "@types/node": "^20",
     "@types/react": "^18",
