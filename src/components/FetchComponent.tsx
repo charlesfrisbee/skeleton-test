@@ -12,25 +12,36 @@ async function FetchComponent() {
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
   return (
-    <div className="flex flex-col border items-center w-64 p-4 gap-4">
+    <div className="flex flex-col border items-center justify-center w-64 p-4 gap-4">
       <img
         src={pokemon.sprites.front_default}
         className="border rounded-full  w-16 h-16"
       />
-      <p className="capitalize w-10 h-6 text-xl ">{pokemon.name}</p>
+      <p className="capitalize w-1/2 text-center text-xl ">{pokemon.name}</p>
       <img
         src={pokemon.sprites.front_default}
         className="border rounded-full  w-16 h-16"
       />
-      <p className="capitalize w-10 h-6 text-xl ">{pokemon.name}</p>
+      <p className="capitalize w-10  text-xl ">{pokemon.name}</p>
       <img
         src={pokemon.sprites.front_default}
         className="border rounded-full  w-16 h-16"
       />
-      <span>
+      <div>
         <ImageComponent src={pokemon.sprites.front_default} />
-      </span>
-      <p className="capitalize w-10 h-6 text-xl ">{pokemon.name}</p>
+      </div>
+      <ul>
+        <li>
+          <p className="capitalize w-10  text-xl ">{pokemon.name}</p>
+        </li>
+        <li>
+          <p className="capitalize w-10  text-xl ">{pokemon.name}</p>
+        </li>
+        <li>
+          <p className="capitalize w-10  text-xl ">{pokemon.name}</p>
+        </li>
+      </ul>
+      <p className="capitalize w-10 text-xl ">{pokemon.name}</p>
     </div>
   );
 }

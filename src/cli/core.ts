@@ -1,3 +1,4 @@
+import path from "path";
 import {
   generateCodeFromAST,
   parseComponentStringToAst,
@@ -9,22 +10,6 @@ import {
   removeImports,
 } from "./utils/importManager";
 
-const filePath = "src/components/FetchComponent.tsx";
-
-const allImports = findImports(filePath);
-const updatedComponentCode = addImportsToComponent(filePath, allImports);
-const originalAst = parseComponentStringToAst(updatedComponentCode);
-
-// recursively traverse AST
-traverseAST(originalAst, filePath);
-
-// remove imports from final ast
-removeImports(originalAst);
-
-// generate skeleton component from final ast
-const skeletonComponent = generateCodeFromAST(originalAst);
-// console.log(skeletonComponent);
-
 export function createSkeletonComponent(pathToComponent: string) {
   const allImports = findImports(pathToComponent);
   const updatedComponentCode = addImportsToComponent(
@@ -34,7 +19,7 @@ export function createSkeletonComponent(pathToComponent: string) {
   const originalAst = parseComponentStringToAst(updatedComponentCode);
 
   // recursively traverse AST
-  traverseAST(originalAst, filePath);
+  traverseAST(originalAst, pathToComponent);
 
   // remove imports from final ast
   removeImports(originalAst);

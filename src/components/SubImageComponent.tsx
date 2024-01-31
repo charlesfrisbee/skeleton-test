@@ -7,7 +7,7 @@ type ImageProps = {
 
 const SubImageComponent = ({ src }: ImageProps) => {
   return (
-    <div className="text-red-200 bg-blue subimage">
+    <div className="text-red-200 bg-blue">
       <SubSubImageComponent src={src} />
     </div>
   );

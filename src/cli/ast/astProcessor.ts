@@ -53,7 +53,7 @@ export function traverseAST(ast: t.Node, filePath: string) {
     },
     JSXExpressionContainer(path) {
       // Replace the JSXExpressionContainer with an empty JSXText node
-      path.replaceWith(t.jSXText(""));
+      path.replaceWith(t.jSXText(`&nbsp;`));
     },
     JSXOpeningElement(path) {
       const attributes = path.node.attributes;

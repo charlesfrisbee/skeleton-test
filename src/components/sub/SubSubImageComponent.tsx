@@ -6,9 +6,9 @@ type ImageProps = {
 
 const SubSubImageComponent = ({ src }: ImageProps) => {
   return (
-    <span>
+    <div>
       <img src={src} className="border rounded-full w-14 h-14" />
-    </span>
+    </div>
   );
 };
 

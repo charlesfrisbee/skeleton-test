@@ -13,6 +13,13 @@ Run the parse script to generate the skeleton component:
 npx tsx src/lib/utils/parser.ts
 ```
 
+## Assumptions
+
+In order for it to work, the following assumptions are made:
+
+- div elements may only contain other html elements as children, and are not allowed to contain text nodes.
+- All other elements may contain text nodes as children and as a result will be given a height value if they do not already have one.
+
 This will generate a skeleton component for a given component.
 
 ## TODO
