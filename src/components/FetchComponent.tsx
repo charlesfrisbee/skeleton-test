@@ -27,6 +27,10 @@ async function FetchComponent() {
         src={pokemon.sprites.front_default}
         className="border rounded-full  w-16 h-16"
       />
+      <img
+        src={pokemon.sprites.front_default}
+        className="border rounded-full  w-16 h-16"
+      />
       <div>
         <ImageComponent src={pokemon.sprites.front_default} />
       </div>

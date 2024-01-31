@@ -8,11 +8,12 @@ function FetchComponent() {
       <img className="border rounded-full  w-16 h-16 animate-pulse rounded-md bg-gray-300" />
       <p className="capitalize w-full text-center  text-xl  animate-pulse rounded-md bg-gray-300">&nbsp;</p>
       <img className="border rounded-full  w-16 h-16 animate-pulse rounded-md bg-gray-300" />
+      <img className="border rounded-full  w-16 h-16 animate-pulse rounded-md bg-gray-300" />
       <div>
         <div>
       <div className="text-red-200 bg-blue">
       <div>
-      <img className="border rounded-full w-14 h-14 animate-pulse rounded-md bg-gray-300" />
+      <img className="border rounded-full w-16 h-16 animate-pulse rounded-md bg-gray-300" />
     </div>
     </div>
     </div>
