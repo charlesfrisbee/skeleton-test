@@ -1,5 +1,5 @@
-import _generate from "@babel/generator";
-import _traverse from "@babel/traverse";
+import generate from "@babel/generator";
+import traverse from "@babel/traverse";
 import * as t from "@babel/types";
 import {
   getComponentNameFromPath,
@@ -8,9 +8,6 @@ import {
 } from "./helpers";
 import { resolveImportPath } from "./fileSystem";
 import { hasBody, parseFileToAst } from "../ast/astProcessor";
-
-const traverse = _traverse.default;
-const generate = _generate.default;
 
 export function findImports(
   filePath: string,
