@@ -1,4 +1,3 @@
-import path from "path";
 import {
   generateCodeFromAST,
   parseComponentStringToAst,
@@ -12,6 +11,7 @@ import {
 
 export function createSkeletonComponent(pathToComponent: string) {
   const allImports = findImports(pathToComponent);
+
   const updatedComponentCode = addImportsToComponent(
     pathToComponent,
     allImports
@@ -29,7 +29,3 @@ export function createSkeletonComponent(pathToComponent: string) {
   //   console.log(skeletonComponent);
   return skeletonComponent;
 }
-
-// // write to file
-// const outputFilePath = path.resolve(__dirname, "SkeletonComponent.tsx");
-// fs.writeFileSync(outputFilePath, newCode);

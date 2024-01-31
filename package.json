@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "tsup --watch src/cli/cli.ts",
+    "build": "tsup --watch",
     "start": "next start",
     "lint": "next lint",
     "parse": "tsx src/lib/utils/parser8.ts",

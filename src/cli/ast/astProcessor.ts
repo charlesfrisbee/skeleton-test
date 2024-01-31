@@ -52,10 +52,42 @@ export function traverseAST(ast: t.Node, filePath: string) {
       }
     },
     JSXExpressionContainer(path) {
-      // Replace the JSXExpressionContainer with an empty JSXText node
+      // Replace the JSXExpressionContainer with an empty JSXText nod
       path.replaceWith(t.jSXText(`&nbsp;`));
     },
     JSXOpeningElement(path) {
+      const additionalClasses = "animate-pulse rounded-md bg-gray-300";
+
+      // Check if the element has children that are text or JSX expressions and not JSX elements
+      const hasNonElementChildren = path.parentPath.node.children.every(
+        (child) =>
+          t.isJSXText(child) ||
+          (t.isJSXExpressionContainer(child) &&
+            !t.isJSXElement(child.expression))
+      );
+
+      if (hasNonElementChildren) {
+        const classNameAttribute = path.node.attributes.find(
+          (attr) => t.isJSXAttribute(attr) && attr.name.name === "className"
+        );
+
+        if (
+          classNameAttribute &&
+          t.isJSXAttribute(classNameAttribute) &&
+          t.isStringLiteral(classNameAttribute.value)
+        ) {
+          // Append to existing className
+          classNameAttribute.value.value += ` ${additionalClasses}`;
+        } else {
+          // Add new className attribute
+          const newClassNameAttribute = t.jsxAttribute(
+            t.jsxIdentifier("className"),
+            t.stringLiteral(additionalClasses)
+          );
+          path.node.attributes.push(newClassNameAttribute);
+        }
+      }
+
       const attributes = path.node.attributes;
       const classNameAttribute = attributes.find(
         (attr) => t.isJSXAttribute(attr) && attr.name.name === "className"

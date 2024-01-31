@@ -10,19 +10,7 @@ export default async function Home() {
 
   return (
     <main className="flex flex-col h-screen  items-center justify-center">
-      {/* <SkeletonWrapper>
-        <AsyncComponent pokemonName={pokemon.name} />
-      </SkeletonWrapper>
-      <br /> */}
-      <Suspense
-        fallback={
-          <SkeletonComponent />
-          // <div>loading...</div>
-          // <SkeletonWrapper>
-          //   <FetchComponent />
-          // </SkeletonWrapper>
-        }
-      >
+      <Suspense fallback={<SkeletonComponent />}>
         <FetchComponent />
       </Suspense>
     </main>
