@@ -3,6 +3,7 @@ import FetchComponent from "@/components/FetchComponent";
 import SkeletonWrapper from "@/components/SkeletonWrapper";
 import SkeletonComponent from "@/components/SkeletonComponent";
 import { Suspense } from "react";
+import FetchComponent2 from "@/components/FetchComponent2";
 
 export default async function Home() {
   const res = await fetch("https://pokeapi.co/api/v2/pokemon/ditto");
