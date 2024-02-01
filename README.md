@@ -26,6 +26,9 @@ This will generate a skeleton component for a given component.
 
 - if there are several functions in the input component, the parser will not be able to determine which function is the render function and will output more than one, which is not what we want. Need to add in a check for the default export and use that as the render function. Potentially as a first pass of the ast.
 - if there is any text as the child of a component that is not within a JSX Expression, it will not be removed
+- not able to handle map functions that return JSX elements. This is because the map function is contained within a JSX Expression and the parser is not able to determine that the map function is returning JSX elements. Need to check each jsx expression to see if it is a map function and then parse the children of the map function.
+- if a comment is within a JSX Expression, it will be replaced with a &nbsp; character. Need to add a check to see if the child is a comment and if so remove it.
+- need to add a width tailwind class to elements which do not contain widths.
 
 ## TODO
 

@@ -11,8 +11,13 @@ const FetchComponent = async () => {
   // take one second
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
+  const arr = [1];
+
   return (
     <div className="flex flex-col border items-center justify-center w-64 p-4 gap-4">
+      {arr.map((i) => (
+        <ImageComponent key={i} src={pokemon.sprites.front_default} />
+      ))}
       <img
         src={pokemon.sprites.front_default}
         className="border rounded-full  w-16 h-16"
