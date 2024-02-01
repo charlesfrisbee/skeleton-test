@@ -6,7 +6,9 @@ import { Suspense } from "react";
 import FetchComponent2 from "@/components/FetchComponent2";
 
 export default async function Home() {
-  const res = await fetch("https://pokeapi.co/api/v2/pokemon/ditto");
+  const res = await fetch("https://pokeapi.co/api/v2/pokemon/ditto", {
+    cache: "no-cache",
+  });
   const pokemon = await res.json();
 
   return (
