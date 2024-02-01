@@ -51,6 +51,21 @@ export function traverseAST(ast: t.Node, filePath: string) {
         path.node.body.body = [returnStatement];
       }
     },
+    ArrowFunctionExpression(path) {
+      // Remove async keyword from function declaration
+      if (path.node.async) {
+        path.node.async = false;
+      }
+
+      // Assuming you want to apply similar logic as FunctionDeclaration
+      const returnStatement = path.node.body.body.find(
+        (statement) => statement.type === "ReturnStatement"
+      );
+
+      if (returnStatement) {
+        path.node.body.body = [returnStatement];
+      }
+    },
     JSXExpressionContainer(path) {
       // Replace the JSXExpressionContainer with an empty JSXText nod
       path.replaceWith(t.jSXText(`&nbsp;`));

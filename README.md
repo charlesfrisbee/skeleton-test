@@ -22,9 +22,14 @@ In order for it to work, the following assumptions are made:
 
 This will generate a skeleton component for a given component.
 
+## Known issues
+
+- if there are several functions in the input component, the parser will not be able to determine which function is the render function and will output more than one, which is not what we want. Need to add in a check for the default export and use that as the render function. Potentially as a first pass of the ast.
+- if there is any text as the child of a component that is not within a JSX Expression, it will not be removed
+
 ## TODO
 
-- [ ] Add CLI argument to specify which component to generate a skeleton for
-- [ ] Add CLI argument to specify the output directory
-- [ ] Add CLI argument to specify the output file name
-- [ ] Use Commander as CLI engine
+- [x] Add CLI argument to specify which component to generate a skeleton for
+- [x] Add CLI argument to specify the output directory
+- [x] Add CLI argument to specify the output file name
+- [x] Use Commander as CLI engine

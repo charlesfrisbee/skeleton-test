@@ -9,6 +9,7 @@ const ImageComponent = ({ src }: ImageProps) => {
   return (
     <div>
       <SubImageComponent src={src} />
+      <p className="w-full"></p>
     </div>
   );
 };
