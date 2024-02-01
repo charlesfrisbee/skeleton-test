@@ -4,7 +4,7 @@ type AsyncComponentProps = {
   pokemonName: string;
 };
 
-async function FetchComponent() {
+const FetchComponent = async () => {
   const res = await fetch("https://pokeapi.co/api/v2/pokemon/ditto");
   const pokemon = await res.json();
 
@@ -49,6 +49,6 @@ async function FetchComponent() {
       <p className="capitalize w-full text-center  text-xl ">{pokemon.name}</p>
     </div>
   );
-}
+};
 
 export default FetchComponent;
